@@ -22,17 +22,14 @@ logger = logging.getLogger(__name__)
 
 
 def infer_pg_type(series: pd.Series):
-    """Infer PostgreSQL type from pandas Series"""
-    # Check for null values first
     non_null_series = series.dropna()
     if len(non_null_series) == 0:
         return "TEXT"
 
-    # Get the pandas dtype
     dtype = non_null_series.dtype
 
     if pd.api.types.is_integer_dtype(dtype):
-        return "BIGINT"  # Use BIGINT for safety
+        return "BIGINT"
     elif pd.api.types.is_float_dtype(dtype):
         return "DOUBLE PRECISION"
     elif pd.api.types.is_bool_dtype(dtype):
@@ -44,41 +41,32 @@ def infer_pg_type(series: pd.Series):
 
 
 def sanitize_column_name(col_name: str) -> str:
-    """Sanitize column names for PostgreSQL"""
-    # Replace spaces and special chars with underscores
-    # import re
+
     sanitized = re.sub(r'[^a-zA-Z0-9_]', '_', str(col_name))
-    # Ensure it doesn't start with a number
     if sanitized[0].isdigit():
         sanitized = f"col_{sanitized}"
     return sanitized.lower()
 
 
 async def test_connection():
-    """Test the Supabase connection"""
     try:
         conn = await get_connection()
         await conn.close()
-        logger.info("✅ Supabase connection successful")
+        logger.info("Supabase connection successful")
         return True
     except Exception as e:
-        logger.error(f"❌ Supabase connection failed: {e}")
+        logger.error(f"Supabase connection failed: {e}")
         return False
 
 
 async def create_table_and_insert(table_name: str, df: pd.DataFrame):
-    """Create table and insert data into Supabase"""
 
-    # Sanitize table name
     table_name = sanitize_column_name(table_name)
 
     if df.empty:
         raise ValueError("DataFrame is empty")
 
-    # Sanitize column names
     df.columns = [sanitize_column_name(col) for col in df.columns]
-
-    # Infer PostgreSQL types from the entire DataFrame
     column_defs = []
     for col in df.columns:
         pg_type = infer_pg_type(df[col])
@@ -98,18 +86,15 @@ async def create_table_and_insert(table_name: str, df: pd.DataFrame):
     conn = None
     try:
         conn = await get_connection()
-        # Enable UUID extension
         await conn.execute("CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";")
 
-        # Create table
         await conn.execute(create_stmt)
-        logger.info(f"✅ Table '{table_name}' created successfully")
+        logger.info(f" Table '{table_name}' created successfully")
 
-        # Prepare batch insert
         records = df.to_dict(orient="records")
 
         if records:
-            # Handle NaN values - convert to None for PostgreSQL
+
             clean_records = []
             for record in records:
                 clean_record = {}
@@ -120,34 +105,30 @@ async def create_table_and_insert(table_name: str, df: pd.DataFrame):
                         clean_record[key] = value
                 clean_records.append(clean_record)
 
-            # Batch insert using executemany for better performance
             keys = list(clean_records[0].keys())
             placeholders = ", ".join(f"${i + 1}" for i in range(len(keys)))
             columns = ", ".join(f'"{k}"' for k in keys)
 
             insert_stmt = f'INSERT INTO "{table_name}" ({columns}) VALUES ({placeholders})'
 
-            # Convert records to list of tuples for executemany
             values_list = [tuple(record[key] for key in keys) for record in clean_records]
 
             await conn.executemany(insert_stmt, values_list)
-            logger.info(f"✅ Inserted {len(clean_records)} records into '{table_name}'")
+            logger.info(f"Inserted {len(clean_records)} records into '{table_name}'")
 
     except asyncpg.exceptions.PostgresError as e:
-        logger.error(f"❌ PostgreSQL Error: {e}")
+        logger.error(f" PostgreSQL Error: {e}")
         raise
     except Exception as e:
-        logger.error(f"❌ Unexpected error: {e}")
+        logger.error(f" Unexpected error: {e}")
         raise
     finally:
         if conn:
             await conn.close()
-            logger.info("🔐 Database connection closed")
+            logger.info(" Database connection closed")
 
-
-# Connection configuration with environment variables
 def get_supabase_config():
-    """Get Supabase configuration and validate"""
+
     config = {
         "user": SUPABASE_DB_USER,
         "password": SUPABASE_DB_PASSWORD,
@@ -163,7 +144,6 @@ def get_supabase_config():
     return config
 
 async def get_table_columns(table_name: str) -> List[str]:
-    """Get all columns for a table"""
     conn = await get_connection()
     try:
         query = """
@@ -180,7 +160,6 @@ async def get_table_columns(table_name: str) -> List[str]:
 
 
 async def list_tables() -> List[str]:
-    """Get all available tables"""
     conn = await get_connection()
     try:
         query = """
@@ -197,17 +176,14 @@ async def list_tables() -> List[str]:
 
 
 def build_where_clause(params: QueryParams, columns: List[str]) -> Tuple[str, List[Any]]:
-    """Build WHERE clause with parameters"""
     where_parts = []
     query_params = []
     param_counter = 1
 
-    # Search functionality
     if params.search and params.search.strip():
         search_term = f"%{params.search.strip()}%"
         search_cols = params.search_columns if params.search_columns else columns
 
-        # Filter search columns to only include existing ones
         valid_search_cols = [col for col in search_cols if col in columns]
 
         if valid_search_cols:
@@ -219,14 +195,12 @@ def build_where_clause(params: QueryParams, columns: List[str]) -> Tuple[str, Li
 
             where_parts.append(f"({' OR '.join(search_conditions)})")
 
-    # Filter functionality
     if params.filters:
         for field, value in params.filters.items():
             if field not in columns:
                 continue
 
             if isinstance(value, dict):
-                # Handle complex filters like {"gte": 100}, {"lt": 50}, {"in": [1,2,3]}
                 for operator, filter_value in value.items():
                     if operator == "gte":
                         where_parts.append(f'"{field}" >= ${param_counter}')
@@ -270,7 +244,6 @@ def build_where_clause(params: QueryParams, columns: List[str]) -> Tuple[str, Li
                         query_params.append(filter_value)
                         param_counter += 1
             else:
-                # Simple equality filter
                 where_parts.append(f'"{field}" = ${param_counter}')
                 query_params.append(value)
                 param_counter += 1
@@ -280,7 +253,6 @@ def build_where_clause(params: QueryParams, columns: List[str]) -> Tuple[str, Li
 
 
 def build_order_clause(params: QueryParams, columns: List[str]) -> str:
-    """Build ORDER BY clause"""
     if not params.sort_by or params.sort_by not in columns:
         return 'ORDER BY "id"'
 
@@ -289,33 +261,26 @@ def build_order_clause(params: QueryParams, columns: List[str]) -> str:
 
 
 async def query_table(table_name: str, params: QueryParams) -> QueryResult:
-    """Query table with search, filter, sort, and pagination"""
     conn = await get_connection()
 
     try:
-        # Get table columns
         columns = await get_table_columns(table_name)
         if not columns:
             raise ValueError(f"Table '{table_name}' not found or has no columns")
 
-        # Build WHERE clause
         where_clause, query_params = build_where_clause(params, columns)
 
-        # Build ORDER clause
         order_clause = build_order_clause(params, columns)
 
-        # Count total records
         count_query = f'SELECT COUNT(*) as total FROM "{table_name}"'
         if where_clause:
             count_query += f" WHERE {where_clause}"
 
         total_count = await conn.fetchval(count_query, *query_params)
 
-        # Calculate pagination
         offset = (params.page - 1) * params.limit
         total_pages = (total_count + params.limit - 1) // params.limit
 
-        # Build main query
         main_query = f'''
         SELECT * FROM "{table_name}"
         {f"WHERE {where_clause}" if where_clause else ""}
@@ -325,13 +290,10 @@ async def query_table(table_name: str, params: QueryParams) -> QueryResult:
 
         query_params.extend([params.limit, offset])
 
-        # Execute query
         rows = await conn.fetch(main_query, *query_params)
 
-        # Convert to dict
         data = [dict(row) for row in rows]
 
-        # Remove id column from results if present
         for item in data:
             item.pop('id', None)
 
@@ -350,18 +312,14 @@ async def query_table(table_name: str, params: QueryParams) -> QueryResult:
 
 
 async def get_table_stats(table_name: str) -> Dict[str, Any]:
-    """Get table statistics"""
     conn = await get_connection()
 
     try:
-        # Get basic stats
         stats_query = f'SELECT COUNT(*) as total_rows FROM "{table_name}"'
         total_rows = await conn.fetchval(stats_query)
 
-        # Get columns
         columns = await get_table_columns(table_name)
 
-        # Get sample data for column analysis
         sample_query = f'SELECT * FROM "{table_name}" LIMIT 100'
         sample_rows = await conn.fetch(sample_query)
 

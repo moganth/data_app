@@ -7,26 +7,22 @@ from utils.file_parser import parse_file
 from services.mongo_service import insert_many_mongo
 from services.supabase_service import create_table_and_insert
 
-# Set up logging
+
 logger = logging.getLogger(__name__)
 
 
 class UploadHandler:
-    """Handler class for file upload operations"""
 
     @staticmethod
     def validate_file(file: UploadFile) -> None:
-        """Validate uploaded file"""
         if not file.filename:
             raise ValueError("No file uploaded")
 
-        # Validate file type
         if not file.filename.endswith(('.csv', '.xlsx', '.xls')):
             raise ValueError("Only CSV and Excel files are supported")
 
     @staticmethod
     def validate_upload_options(mongo_only: bool, supabase_only: bool) -> None:
-        """Validate upload options"""
         if mongo_only and supabase_only:
             raise ValueError("Cannot specify both mongo_only and supabase_only")
 
@@ -36,7 +32,6 @@ class UploadHandler:
         table_name: Optional[str] = None,
         collection_name: Optional[str] = None
     ) -> tuple[str, str]:
-        """Generate table and collection names if not provided"""
         base_name = filename.split('.')[0].replace(" ", "_").replace("-", "_")
         timestamp = int(time.time())
 
@@ -46,7 +41,6 @@ class UploadHandler:
         if not collection_name:
             collection_name = f"{base_name}_{timestamp}"
 
-        # Clean names
         table_name = table_name.lower().replace(" ", "_").replace("-", "_")
         collection_name = collection_name.lower().replace(" ", "_").replace("-", "_")
 
@@ -60,23 +54,19 @@ class UploadHandler:
         mongo_only: bool = False,
         supabase_only: bool = False
     ) -> Dict[str, Any]:
-        """Handle file upload to MongoDB and/or Supabase"""
 
         try:
-            # Validate inputs
             UploadHandler.validate_file(file)
             UploadHandler.validate_upload_options(mongo_only, supabase_only)
 
-            # Parse the uploaded file
-            logger.info(f"📄 Parsing file: {file.filename}")
+            logger.info(f"Parsing file: {file.filename}")
             df = await parse_file(file)
 
             if df.empty:
                 raise ValueError("Uploaded file is empty")
 
-            logger.info(f"📊 Parsed {len(df)} rows with {len(df.columns)} columns")
+            logger.info(f"Parsed {len(df)} rows with {len(df.columns)} columns")
 
-            # Generate names if not provided
             table_name, collection_name = UploadHandler.generate_names(
                 file.filename, table_name, collection_name
             )
@@ -91,29 +81,26 @@ class UploadHandler:
                 "supabase_success": False
             }
 
-            # Insert to MongoDB (unless supabase_only is True)
             if not supabase_only:
                 try:
-                    logger.info("🍃 Inserting data to MongoDB...")
+                    logger.info("Inserting data to MongoDB...")
                     await insert_many_mongo(df.to_dict(orient="records"))
                     results["mongo_success"] = True
-                    logger.info("✅ MongoDB insertion successful")
+                    logger.info("MongoDB insertion successful")
                 except Exception as e:
-                    logger.error(f"❌ MongoDB insertion failed: {e}")
+                    logger.error(f" MongoDB insertion failed: {e}")
                     results["mongo_error"] = str(e)
 
-            # Insert to Supabase (unless mongo_only is True)
             if not mongo_only:
                 try:
-                    logger.info("🐘 Inserting data to Supabase...")
+                    logger.info(" Inserting data to Supabase...")
                     await create_table_and_insert(table_name, df)
                     results["supabase_success"] = True
-                    logger.info("✅ Supabase insertion successful")
+                    logger.info(" Supabase insertion successful")
                 except Exception as e:
-                    logger.error(f"❌ Supabase insertion failed: {e}")
+                    logger.error(f" Supabase insertion failed: {e}")
                     results["supabase_error"] = str(e)
 
-            # Determine overall success
             success_conditions = [
                 (mongo_only and results["mongo_success"]),
                 (supabase_only and results["supabase_success"]),
@@ -131,8 +118,8 @@ class UploadHandler:
             return results
 
         except ValueError as e:
-            logger.error(f"❌ Validation error: {e}")
+            logger.error(f" Validation error: {e}")
             raise e
         except Exception as e:
-            logger.error(f"❌ Unexpected error: {e}")
+            logger.error(f" Unexpected error: {e}")
             raise Exception(f"Internal server error: {str(e)}")

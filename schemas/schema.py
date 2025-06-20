@@ -11,17 +11,14 @@ class QueryResult(BaseModel):
     has_previous: bool
 
 class QueryParams(BaseModel):
-    # Pagination
+
     page: int = 1
     limit: int = 10
 
-    # Search
     search: Optional[str] = None
-    search_columns: Optional[List[str]] = None  # columns to search in
+    search_columns: Optional[List[str]] = None
 
-    # Filters
     filters: Optional[Dict[str, Any]] = None
 
-    # Sorting
     sort_by: Optional[str] = None
-    sort_order: str = "asc"  # asc or desc
+    sort_order: str = "asc"

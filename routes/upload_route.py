@@ -14,7 +14,6 @@ async def upload_file(
         mongo_only: bool = Query(default=False, description="Upload to MongoDB only"),
         supabase_only: bool = Query(default=False, description="Upload to Supabase only")
 ):
-    """Upload CSV/Excel file to MongoDB and Supabase"""
     try:
         results = await UploadHandler.handle_file_upload(
             file=file,
@@ -24,12 +23,11 @@ async def upload_file(
             supabase_only=supabase_only
         )
 
-        # Return appropriate response based on status
         if results["status"] == "success":
             return results
         elif results["status"] == "partial_success":
             return JSONResponse(
-                status_code=207,  # Multi-Status
+                status_code=207,
                 content=results
             )
         else:
