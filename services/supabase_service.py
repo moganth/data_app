@@ -331,7 +331,7 @@ async def get_table_stats(table_name: str) -> Dict[str, Any]:
                     column_stats[col] = {
                         "non_null_count": len(values),
                         "data_type": type(values[0]).__name__,
-                        "sample_values": list(set(values))[:10]  # First 10 unique values
+                        "sample_values": list(set(values))[:10]
                     }
 
         return {

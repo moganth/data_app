@@ -8,11 +8,9 @@ from config import (
     SUPABASE_DB_NAME, SUPABASE_DB_USER, SUPABASE_DB_PASSWORD
 )
 
-# MongoDB connection setup
 mongo_client = motor.motor_asyncio.AsyncIOMotorClient(MONGO_URI)
 mongo_db = mongo_client[MONGO_DB]
 
-# Supabase connection function
 async def get_supabase_connection():
     ssl_context = ssl.create_default_context()
     ssl_context.check_hostname = False

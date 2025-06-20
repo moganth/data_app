@@ -5,7 +5,6 @@ from contextlib import asynccontextmanager
 from dotenv import load_dotenv
 from fastapi import FastAPI
 
-# Import routers
 from routes.upload_route import router as upload_route
 from routes.supabase_route import router as supabase_route
 from routes.mongo_route import router as mongodb_route

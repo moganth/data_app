@@ -11,7 +11,6 @@ class QueryResult(BaseModel):
     has_previous: bool
 
 class QueryParams(BaseModel):
-
     page: int = 1
     limit: int = 10
 
