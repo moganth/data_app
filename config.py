@@ -1,0 +1,17 @@
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+# MongoDB
+MONGO_URI=os.getenv("MONGO_URI")
+MONGO_DB=os.getenv("MONGO_DB")
+MONGO_COLLECTION=os.getenv("MONGO_COLLECTION")
+
+# Supabase
+SUPABASE_DB_HOST=os.getenv("SUPABASE_DB_HOST")
+SUPABASE_DB_PORT=os.getenv("SUPABASE_DB_PORT")
+SUPABASE_DB_NAME=os.getenv("SUPABASE_DB_NAME")
+SUPABASE_DB_USER=os.getenv("SUPABASE_DB_USER")
+SUPABASE_DB_PASSWORD=os.getenv("SUPABASE_DB_PASSWORD")
+SUPABASE_SERVICE_ROLE_KEY=os.getenv("SUPABASE_SERVICE_ROLE_KEY")
