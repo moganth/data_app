@@ -4,7 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="1317a3c9-71e1-4678-984c-a8135553e646" name="Changes" comment="" />
+    <list default="true" id="1317a3c9-71e1-4678-984c-a8135553e646" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -29,7 +31,7 @@
 }</component>
   <component name="GithubPullRequestsUISettings">{
   &quot;selectedUrlAndAccountId&quot;: {
-    &quot;url&quot;: &quot;https://github.com/moganth/data.git&quot;,
+    &quot;url&quot;: &quot;https://github.com/moganth/data_app.git&quot;,
     &quot;accountId&quot;: &quot;773f6550-e56c-4660-9a20-0a3e15822b47&quot;
   }
 }</component>

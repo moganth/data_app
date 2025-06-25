@@ -1,0 +1,280 @@
+# Supabase Query Examples
+
+## Basic Query Examples
+
+### Basic Query Example
+```json
+{
+  "page": 1,
+  "limit": 10,
+  "search": "",
+  "search_columns": [],
+  "filters": {},
+  "sort_by": "title",
+  "sort_order": "asc"
+}
+```
+
+### Search in Specific Fields
+```json
+{
+  "page": 1,
+  "limit": 10,
+  "search": "science",
+  "search_columns": ["title", "description", "genre"],
+  "filters": {},
+  "sort_by": "published_date",
+  "sort_order": "desc"
+}
+```
+
+### Filter by Genre
+```json
+{
+  "page": 1,
+  "limit": 20,
+  "search": "",
+  "search_columns": [],
+  "filters": {
+    "genre": "Fiction"
+  },
+  "sort_by": "title",
+  "sort_order": "asc"
+}
+```
+
+### Filter by Multiple Genres
+```json
+{
+  "page": 1,
+  "limit": 10,
+  "search": "",
+  "search_columns": [],
+  "filters": {
+    "genre": {
+      "in": ["Fiction", "Science Fiction", "Literary Criticism"]
+    }
+  },
+  "sort_by": "author",
+  "sort_order": "asc"
+}
+```
+
+### Filter by Page Count Range
+```json
+{
+  "page": 1,
+  "limit": 15,
+  "search": "",
+  "search_columns": [],
+  "filters": {
+    "pages": {
+      "gte": "200",
+      "lte": "500"
+    }
+  },
+  "sort_by": "pages",
+  "sort_order": "desc"
+}
+```
+
+### Filter by Publication Date Range
+```json
+{
+  "page": 1,
+  "limit": 10,
+  "search": "",
+  "search_columns": [],
+  "filters": {
+    "published_date": {
+      "gte": "2000-01-01",
+      "lt": "2020-01-01"
+    }
+  },
+  "sort_by": "published_date",
+  "sort_order": "desc"
+}
+```
+
+### Complex Filter: Books with Ratings
+```json
+{
+  "page": 1,
+  "limit": 10,
+  "search": "",
+  "search_columns": [],
+  "filters": {
+    "average_rating": {
+      "ne": "No rating"
+    },
+    "ratings_count": {
+      "gt": 0
+    }
+  },
+  "sort_by": "average_rating",
+  "sort_order": "desc"
+}
+```
+
+### Search with Title Contains Filter
+```json
+{
+  "page": 1,
+  "limit": 10,
+  "search": "",
+  "search_columns": [],
+  "filters": {
+    "title": {
+      "contains": "Popular Science"
+    }
+  },
+  "sort_by": "published_date",
+  "sort_order": "desc"
+}
+```
+
+### Filter by Author Starts With
+```json
+{
+  "page": 1,
+  "limit": 10,
+  "search": "",
+  "search_columns": [],
+  "filters": {
+    "author": {
+      "startswith": "Unknown"
+    }
+  },
+  "sort_by": "title",
+  "sort_order": "asc"
+}
+```
+
+### Filter by Publisher Ends With
+```json
+{
+  "page": 1,
+  "limit": 10,
+  "search": "",
+  "search_columns": [],
+  "filters": {
+    "publisher": {
+      "endswith": "Press"
+    }
+  },
+  "sort_by": "publisher",
+  "sort_order": "asc"
+}
+```
+
+### Combined Search and Filters
+```json
+{
+  "page": 1,
+  "limit": 10,
+  "search": "fiction",
+  "search_columns": ["title", "description", "genre"],
+  "filters": {
+    "pages": {
+      "gte": "100"
+    },
+    "language": "en",
+    "publisher": {
+      "ne": "Unknown Publisher"
+    }
+  },
+  "sort_by": "pages",
+  "sort_order": "desc"
+}
+```
+
+## Advanced Examples
+
+### Multiple Conditions
+```json
+{
+  "page": 1,
+  "limit": 15,
+  "search": "literature",
+  "search_columns": ["title", "description"],
+  "filters": {
+    "genre": {
+      "in": ["Literary Criticism", "Fiction", "Philosophy"]
+    },
+    "pages": {
+      "gte": 200,
+      "lte": 800
+    },
+    "published_date": {
+      "gte": "1980-01-01"
+    },
+    "language": "en",
+    "author": {
+      "ne": "Unknown Author"
+    },
+    "publisher": {
+      "contains": "University"
+    }
+  },
+  "sort_by": "published_date",
+  "sort_order": "desc"
+}
+```
+
+### Filter by Exact Rating
+```json
+{
+  "page": 1,
+  "limit": 10,
+  "search": "",
+  "search_columns": [],
+  "filters": {
+    "average_rating": {
+      "eq": "5"
+    }
+  },
+  "sort_by": "ratings_count",
+  "sort_order": "desc"
+}
+```
+
+### Books Published Before a Certain Date
+```json
+{
+  "page": 1,
+  "limit": 20,
+  "search": "",
+  "search_columns": [],
+  "filters": {
+    "published_date": {
+      "lt": "1990-01-01"
+    },
+    "pages": {
+      "gt": 100
+    }
+  },
+  "sort_by": "published_date",
+  "sort_order": "asc"
+}
+```
+
+### Search Popular Science Magazines by Date Range
+```json
+{
+  "page": 1,
+  "limit": 25,
+  "search": "Popular Science",
+  "search_columns": ["title"],
+  "filters": {
+    "published_date": {
+      "gte": "1970-01-01",
+      "lte": "1990-12-31"
+    },
+    "pages": {
+      "lt": 300
+    }
+  },
+  "sort_by": "published_date",
+  "sort_order": "asc"
+}
+```

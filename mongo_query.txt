@@ -1,0 +1,278 @@
+# MongoDB Query Examples
+
+## Basic Query Examples
+
+### Basic Query Example
+```json
+{
+  "page": 1,
+  "limit": 10,
+  "search": "",
+  "search_columns": [],
+  "filters": {},
+  "sort_by": "title",
+  "sort_order": "asc"
+}
+```
+
+### Search in Specific Fields
+```json
+{
+  "page": 1,
+  "limit": 10,
+  "search": "science",
+  "search_columns": ["title", "description", "genre"],
+  "filters": {},
+  "sort_by": "published_date",
+  "sort_order": "desc"
+}
+```
+
+### Filter by Genre
+```json
+{
+  "page": 1,
+  "limit": 20,
+  "search": "",
+  "search_columns": [],
+  "filters": {
+    "genre": "Fiction"
+  },
+  "sort_by": "title",
+  "sort_order": "asc"
+}
+```
+
+### Filter by Multiple Genres
+```json
+{
+  "page": 1,
+  "limit": 10,
+  "search": "",
+  "search_columns": [],
+  "filters": {
+    "genre": {
+      "in": ["Fiction", "Science Fiction", "Literary Criticism"]
+    }
+  },
+  "sort_by": "author",
+  "sort_order": "asc"
+}
+```
+
+### Filter by Page Count Range
+```json
+{
+  "page": 1,
+  "limit": 15,
+  "search": "",
+  "search_columns": [],
+  "filters": {
+    "pages": {
+      "gte": "200",
+      "lte": "500"
+    }
+  },
+  "sort_by": "pages",
+  "sort_order": "desc"
+}
+```
+
+### Filter by Publication Date Range
+```json
+{
+  "page": 1,
+  "limit": 10,
+  "search": "",
+  "search_columns": [],
+  "filters": {
+    "published_date": {
+      "gte": "2000-01-01",
+      "lt": "2020-01-01"
+    }
+  },
+  "sort_by": "published_date",
+  "sort_order": "desc"
+}
+```
+
+### Complex Filter: Books with Ratings
+```json
+{
+  "page": 1,
+  "limit": 10,
+  "search": "",
+  "search_columns": [],
+  "filters": {
+    "average_rating": {
+      "ne": "No rating"
+    },
+    "ratings_count": {
+      "gt": 0
+    }
+  },
+  "sort_by": "average_rating",
+  "sort_order": "desc"
+}
+```
+
+### Search with Title Contains Filter
+```json
+{
+  "page": 1,
+  "limit": 10,
+  "search": "",
+  "search_columns": [],
+  "filters": {
+    "title": {
+      "contains": "Popular Science"
+    }
+  },
+  "sort_by": "published_date",
+  "sort_order": "desc"
+}
+```
+
+### Filter by Author Starts With
+```json
+{
+  "page": 1,
+  "limit": 10,
+  "search": "",
+  "search_columns": [],
+  "filters": {
+    "author": {
+      "startswith": "Unknown"
+    }
+  },
+  "sort_by": "title",
+  "sort_order": "asc"
+}
+```
+
+### Combined Search and Filters
+```json
+{
+  "page": 1,
+  "limit": 10,
+  "search": "fiction",
+  "search_columns": ["title", "description", "genre"],
+  "filters": {
+    "pages": {
+      "gte": "100"
+    },
+    "language": "en",
+    "publisher": {
+      "ne": "Unknown Publisher"
+    }
+  },
+  "sort_by": "pages",
+  "sort_order": "desc"
+}
+```
+
+## Compound Filtering Examples
+
+### 1. Multiple Field Filters (AND Logic)
+This creates an AND condition between different fields:
+
+```json
+{
+  "page": 1,
+  "limit": 10,
+  "filters": {
+    "genre": "Fiction",
+    "language": "en",
+    "pages": {"gte": 200},
+    "publisher": {"ne": "Unknown Publisher"},
+    "average_rating": {"ne": "No rating"}
+  }
+}
+```
+
+**MongoDB Query Result:** `genre = "Fiction" AND language = "en" AND pages >= 200 AND publisher != "Unknown Publisher" AND average_rating != "No rating"`
+
+### 2. Multiple Conditions on Same Field
+```json
+{
+  "page": 1,
+  "limit": 10,
+  "filters": {
+    "pages": {
+      "gte": 200,
+      "lte": 800
+    },
+    "published_date": {
+      "gte": "2000-01-01",
+      "lt": "2020-01-01"
+    }
+  }
+}
+```
+
+**MongoDB Query Result:** `pages >= 200 AND pages <= 800 AND published_date >= "2000-01-01" AND published_date < "2020-01-01"`
+
+### 3. Complex Compound Example
+```json
+{
+  "page": 1,
+  "limit": 15,
+  "search": "science",
+  "search_columns": ["title", "description"],
+  "filters": {
+    "genre": {
+      "in": ["Science Fiction", "Literary Criticism", "Philosophy"]
+    },
+    "pages": {
+      "gte": "100",
+      "lte": "600"
+    },
+    "language": "en",
+    "publisher": {
+      "ne": "Unknown Publisher"
+    },
+    "author": {
+      "startswith": "P"
+    },
+    "ratings_count": {
+      "gt": 0
+    }
+  },
+  "sort_by": "pages",
+  "sort_order": "desc"
+}
+```
+
+### 4. Text Search + Multiple Filters
+```json
+{
+  "page": 1,
+  "limit": 10,
+  "search": "fiction literature",
+  "search_columns": ["title", "description", "genre"],
+  "filters": {
+    "pages": {"gte": 150},
+    "published_date": {"gte": "1990-01-01"},
+    "average_rating": {"ne": "No rating"},
+    "genre": {
+      "in": ["Fiction", "Literary Criticism", "Philosophy"]
+    }
+  }
+}
+```
+
+## Limitations
+
+- **'Or' logic not supported**
+- **Complex nested conditions not supported**
+
+## Supported Features
+
+### What I DO Have:
+
+- Multiple field filters (implicit AND between fields)
+- Multiple conditions per field (range queries, etc.)
+- Text search combined with filters
+- Array membership (`in` operator)
+- String matching (`contains`, `startswith`, `endswith`)
+- Comparison operators (`gt`, `gte`, `lt`, `lte`, `eq`, `ne`)
